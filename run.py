@@ -12,6 +12,7 @@ from mnist import mnist_1000
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from sklearn.manifold import TSNE
 from scipy.misc import imsave
 from scipy.misc import imresize
@@ -128,12 +129,16 @@ def visualize():
     if args.scatter:
         for i, (x_, y_) in enumerate([(xtr, ytr), (xte, yte)]):
             model = TSNE(learning_rate=10)
-            mu = sess.run(tnet['mu'], {x: x_})
+            mu, _ = sess.run(tennet, {x: x_})
             results = model.fit_transform(mu)
 
             plt.scatter(results[:,0], results[:,1],
                     c=['C%d' % np.argmax(y_[n,:]) for n in range(y_.shape[0])],
                     alpha=0.5)
+
+            handles = [mpatches.Patch(color='C%d'%c, label='%d'%c) for c in range(10)]
+            plt.legend(handles=handles)
+
             flag = 'train' if i == 0 else 'test'
             plt.savefig(os.path.join(visdir, 'scatter_%s.pdf'%flag), format='pdf')
             plt.close()

@@ -24,7 +24,5 @@ def autoencoder(x, zdim, training, name='autoencoder', reuse=None):
 
     net = {}
     net['elbo'] = elbo
-    net['mu'] = mu
-    net['sigma'] = sigma
     net['weights'] = tf.trainable_variables()
     return net
