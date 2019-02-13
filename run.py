@@ -30,7 +30,6 @@ args = parser.parse_args()
 
 os.environ['TF_ENABLE_WINOGRAD_NONFUSED'] = '1'
 os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_num)
-os.environ['CUDA_CACHE_PATH'] = '/st1/hblee/tmp'
 
 savedir = './results/run' \
         if args.savedir is None else args.savedir
