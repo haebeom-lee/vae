@@ -5,7 +5,7 @@ import argparse
 import time
 import os
 
-from model import autoencoder, decoder
+from model import autoencoder, decoder, encoder
 from accumulator import Accumulator
 from mnist import mnist_1000
 
@@ -25,11 +25,13 @@ parser.add_argument('--mode', type=str, default='train')
 parser.add_argument('--gpu_num', type=int, default=0)
 parser.add_argument('--zdim', type=int, default=2)
 parser.add_argument("--scatter", default=False, action="store_true")
+parser.add_argument("--reconstruct", default=False, action="store_true")
 parser.add_argument("--manifold", default=False, action="store_true")
 args = parser.parse_args()
 
 os.environ['TF_ENABLE_WINOGRAD_NONFUSED'] = '1'
 os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_num)
+os.environ['CUDA_CACHE_PATH'] = '/st1/hblee/tmp'
 
 savedir = './results/run' \
         if args.savedir is None else args.savedir
@@ -50,6 +52,7 @@ tnet = autoencoder(x, args.zdim, False, reuse=True) # test
 
 # for visualization
 z = tf.placeholder(tf.float32, [None, args.zdim])
+tennet = encoder(x, args.zdim, reuse=True) # test encoder
 tdenet = decoder(z, reuse=True) # test decoder
 
 def train():
@@ -108,6 +111,10 @@ def visualize():
     saver = tf.train.Saver(tnet['weights'])
     saver.restore(sess, os.path.join(savedir, 'model'))
 
+    visdir = os.path.join(savedir, 'vis')
+    if not os.path.isdir(visdir):
+        os.makedirs(visdir)
+
     def _merge(images, size):
         h, w = images.shape[1], images.shape[2]
         img = np.zeros((h * size[0], w * size[1]))
@@ -117,7 +124,7 @@ def visualize():
             img[j*h:(j+1)*h, i*w:(i+1)*w] = image_
         return img
 
-    # scater-plot
+    # scatter-plot
     if args.scatter:
         for i, (x_, y_) in enumerate([(xtr, ytr), (xte, yte)]):
             model = TSNE(learning_rate=10)
@@ -128,8 +135,27 @@ def visualize():
                     c=['C%d' % np.argmax(y_[n,:]) for n in range(y_.shape[0])],
                     alpha=0.5)
             flag = 'train' if i == 0 else 'test'
-            plt.savefig(savedir + '/scatter_%s.pdf'%flag, format='pdf')
+            plt.savefig(os.path.join(visdir, 'scatter_%s.pdf'%flag), format='pdf')
             plt.close()
+
+    # reconstruction
+    if args.reconstruct:
+        size = 5
+        idx = np.random.choice(range(1000), size=size**2, replace=False)
+        xtr_, xte_ = xtr[idx], xte[idx]
+
+        for (x_, flag) in [(xtr_,'[train]'), (xte_,'[test]')]:
+            # pass encoder and decoder
+            mu_z, _ = sess.run(tennet, {x: x_})
+            xmap = sess.run(tdenet, {z: mu_z})
+
+            xmap = xmap.reshape(size**2, 28, 28)
+            imsave(os.path.join(visdir, '%s reconstruct.png' % flag),
+                    _merge(xmap, [size, size]))
+
+            x_ = x_.reshape(-1, 28, 28)
+            imsave(os.path.join(visdir, '%s original.png' % flag),
+                    _merge(x_, [size, size]))
 
     # 2-D manifold
     if args.manifold:
@@ -139,7 +165,7 @@ def visualize():
 
         xmap = sess.run(tdenet, {z: z_})
         xmap = xmap.reshape(size*size, 28, 28)
-        imsave(savedir + '/manifold.png', _merge(xmap, [size, size]))
+        imsave(os.path.join(visdir, 'manifold.png'), _merge(xmap, [size, size]))
 
 if __name__=='__main__':
     if args.mode == 'train':
