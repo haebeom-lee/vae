@@ -32,7 +32,6 @@ args = parser.parse_args()
 
 os.environ['TF_ENABLE_WINOGRAD_NONFUSED'] = '1'
 os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_num)
-os.environ['CUDA_CACHE_PATH'] = '/st1/hblee/tmp'
 
 savedir = './results/run' \
         if args.savedir is None else args.savedir
@@ -105,7 +104,9 @@ def test():
     for j in range(n_test_batches):
         bx = xte[j*args.batch_size:(j+1)*args.batch_size,:]
         logger.accum(sess.run(tnet['elbo'], {x:bx}))
+    print()
     logger.print_(header='test')
+    print()
 
 def visualize():
     sess = tf.Session()

@@ -4,13 +4,15 @@ def encoder(x, zdim, name='encoder', reuse=None):
     x = dense(x, 500, activation=relu, name=name+'/dense1', reuse=reuse)
     x = dense(x, 500, activation=relu, name=name+'/dense2', reuse=reuse)
     mu = dense(x, zdim, name=name+'/mu', reuse=reuse)
-    sigma = dense(x, zdim, activation=softplus, name=name+'/sigma', reuse=reuse)
+    sigma = dense(x, zdim, activation=softplus, name=name+'/sigma',
+            reuse=reuse)
     return mu, sigma
 
 def decoder(x, name='decoder', reuse=None):
     x = dense(x, 500, activation=relu, name=name+'/dense1', reuse=reuse)
     x = dense(x, 500, activation=relu, name=name+'/dense2', reuse=reuse)
-    x = dense(x, 784, activation=sigmoid, name=name+'/output', reuse=reuse)
+    x = dense(x, 784, activation=sigmoid, name=name+'/output',
+            reuse=reuse)
     return x
 
 def autoencoder(x, zdim, training, name='autoencoder', reuse=None):
