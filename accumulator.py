@@ -25,7 +25,7 @@ class Accumulator():
         i = self.argdict.get(arg, -1)
         assert(i is not -1)
         return (self.sums[i]/self.cnt if avg else self.sums[i])
-
+    
     def print_(self, header=None, epoch=None, it=None, time=None,
             logfile=None, do_not_print=[], as_int=[],
             avg=True):
@@ -38,7 +38,8 @@ class Accumulator():
             line += ('(%.3f secs), ' % time)
 
         args = [arg for arg in self.args if arg not in do_not_print]
-
+        
+        arg = []
         for arg in args[:-1]:
             val = self.sums[self.argdict[arg]]
             if avg:
