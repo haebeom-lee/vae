@@ -43,8 +43,8 @@ xtr, ytr, xte, yte = mnist_1000(args.mnist_path)
 
 # placeholders
 x = tf.placeholder(tf.float32, [None, 784])
-n_train_batches = 1000/args.batch_size
-n_test_batches = 1000/args.batch_size
+n_train_batches = int(1000/args.batch_size)
+n_test_batches = int(1000/args.batch_size)
 
 # models
 net = autoencoder(x, args.zdim, True) # train
@@ -60,12 +60,12 @@ def train():
 
     global_step = tf.train.get_or_create_global_step()
     lr = tf.train.piecewise_constant(tf.cast(global_step, tf.int32),
-            [n_train_batches*args.n_epochs/2], [1e-3, 1e-4])
+            [int(n_train_batches*args.n_epochs/2)], [1e-3, 1e-4])
     train_op = tf.train.AdamOptimizer(lr).minimize(loss,
             global_step=global_step)
 
     saver = tf.train.Saver(net['weights'])
-    logfile = open(os.path.join(savedir, 'train.log'), 'w', 0)
+    logfile = open(os.path.join(savedir, 'train.log'), 'w')
 
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
