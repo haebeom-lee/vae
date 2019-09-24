@@ -14,8 +14,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from sklearn.manifold import TSNE
-from scipy.misc import imsave
-from scipy.misc import imresize
+#from scipy.misc import imsave
+#from scipy.misc import imresize
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--batch_size', type=int, default=100)
